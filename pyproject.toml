@@ -1,0 +1,39 @@
+[project]
+name = "stem-analysis"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Haoyang Ni", email = "shephardniy@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "abtem>=1.0.10",
+    "atomap[all]>=0.4.2",
+    "colorcet>=3.2.1",
+    "ffmpeg-python>=0.2.0",
+    "hyperspy[all]>=2.4.0",
+    "imagecodecs>=2026.8.16",
+    "ipympl>=0.10.0",
+    "jupyterlab>=4.6.3",
+    "libertem>=0.16.0",
+    "marimo[recommended]>=0.24.0",
+    "matplotlib>=3.11.1",
+    "matplotlib-scalebar>=0.9.0",
+    "pandas>=3.0.5",
+    "ptyrad>=1.0.0",
+    "pyqt5>=5.15.11",
+    "seaborn>=0.13.2",
+]
+
+[project.scripts]
+stem-analysis = "stem_analysis:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv]
+required-environments = [
+    "sys_platform == 'win32' and platform_machine == 'AMD64'"
+]
