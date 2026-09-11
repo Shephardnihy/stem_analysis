@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "abtem>=1.0.10",
+    "anywidget>=0.11.0",
     "atomap[all]>=0.4.2",
     "colorcet>=3.2.1",
     "ffmpeg-python>=0.2.0",
@@ -16,6 +17,7 @@ dependencies = [
     "imagecodecs>=2026.8.16",
     "ipympl>=0.10.0",
     "jupyterlab>=4.6.3",
+    "kaleido>=1.4.0",
     "libertem>=0.16.0",
     "marimo[recommended]>=0.24.0",
     "matplotlib>=3.11.1",
