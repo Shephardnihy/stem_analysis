@@ -589,6 +589,20 @@ wheels = [
 ]
 
 [[package]]
+name = "cmocean"
+version = "4.0.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "matplotlib" },
+    { name = "numpy" },
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0e/93/6ce32a2749968071b5239c96c54a229f9cb666d1c2d2cead7246ef28282c/cmocean-4.0.3.tar.gz", hash = "sha256:37868399fb5f41b4eac596e69803f9bfaea49946514dfb2e7f48886854250d7c", size = 7145175, upload-time = "2024-04-06T01:05:26.398Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/86/7b/97754548e9da3d41d7334e375b2cd712e9406a3f48823a5f0a166f42d63d/cmocean-4.0.3-py3-none-any.whl", hash = "sha256:f2fc1d5e349db122ee0c9eac80bba969aa92dd2806548fce58dc8bef962f309e", size = 421873, upload-time = "2024-04-06T01:05:24.069Z" },
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -2080,6 +2094,24 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/81/8f/bce1fa4fb2aa30ffef9be03afd3d3dc2852e73a68e6cfe227fc478399830/kaleido-1.4.0.tar.gz", hash = "sha256:7b893e3e24e28f180844fcf1b0255d1bc3787377507b4669a555a74bcf1d1f92", size = 69673, upload-time = "2026-08-31T20:48:35.194Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/aa/91/e3026cabbac6e4f724aab486d5593ff9cf2274b03416ac7f56064d7e0bf6/kaleido-1.4.0-py3-none-any.whl", hash = "sha256:cd75a0b11ea64d313c2c73c58db9dc519eef9eb494830b414a8492b33108d192", size = 56129, upload-time = "2026-08-31T20:48:34.095Z" },
+]
+
+[[package]]
+name = "kemstem"
+version = "0.0.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cmocean" },
+    { name = "matplotlib" },
+    { name = "numpy" },
+    { name = "scikit-image" },
+    { name = "scikit-learn" },
+    { name = "scipy" },
+    { name = "tqdm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/be/a9/cc61adac1b9b67a4fbcf0400ad6970456370b863d36924375dfcd48cb8c8/kemstem-0.0.6.tar.gz", hash = "sha256:cfb334f8c8ec909eae3796623589f7e57bae49e4c2a8e3cef17992027ab37d76", size = 36755, upload-time = "2026-02-06T23:32:44.181Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f7/a6/842369399bb36e665644cd0e168b6c4f2f6b685cae892c4532c7da54b4b1/kemstem-0.0.6-py3-none-any.whl", hash = "sha256:0421c9f5cb848b1de008d4a25a60fabfc9e5be520053a0ebadb7af6a06912094", size = 40677, upload-time = "2026-02-06T23:32:41.16Z" },
 ]
 
 [[package]]
@@ -4950,6 +4982,7 @@ dependencies = [
     { name = "ipympl" },
     { name = "jupyterlab" },
     { name = "kaleido" },
+    { name = "kemstem" },
     { name = "libertem" },
     { name = "marimo", extra = ["recommended"] },
     { name = "matplotlib" },
@@ -4959,6 +4992,11 @@ dependencies = [
     { name = "ptyrad" },
     { name = "pyqt5" },
     { name = "seaborn" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "stem-analysis" },
 ]
 
 [package.metadata]
@@ -4973,6 +5011,7 @@ requires-dist = [
     { name = "ipympl", specifier = ">=0.10.0" },
     { name = "jupyterlab", specifier = ">=4.6.3" },
     { name = "kaleido", specifier = ">=1.4.0" },
+    { name = "kemstem", specifier = ">=0.0.6" },
     { name = "libertem", specifier = ">=0.16.0" },
     { name = "marimo", extras = ["recommended"], specifier = ">=0.24.0" },
     { name = "matplotlib", specifier = ">=3.11.1" },
@@ -4983,6 +5022,9 @@ requires-dist = [
     { name = "pyqt5", specifier = ">=5.15.11" },
     { name = "seaborn", specifier = ">=0.13.2" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "stem-analysis", editable = "." }]
 
 [[package]]
 name = "sympy"

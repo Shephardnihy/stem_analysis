@@ -1,0 +1,34 @@
+# nature.mplstyle
+
+# Overall font
+font.family: Arial
+font.size: 7
+
+# Math font
+mathtext.fontset: custom
+mathtext.rm: Arial
+mathtext.it: Arial:italic
+mathtext.bf: Arial:bold
+
+# Axes sie
+axes.labelsize: 7
+axes.titlesize: 7
+
+# Tick size
+xtick.labelsize: 7
+ytick.labelsize: 7
+
+# Legend font size
+legend.fontsize: 7
+
+axes.linewidth: 0.8
+xtick.major.width: 0.8
+ytick.major.width: 0.8
+
+xtick.major.size: 3
+ytick.major.size: 3
+
+svg.fonttype: none
+
+figure.dpi: 300
+savefig.dpi: 300
