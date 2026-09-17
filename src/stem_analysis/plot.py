@@ -5,7 +5,7 @@ from matplotlib_scalebar.scalebar import ScaleBar
 from matplotlib.widgets import Button, Slider, RangeSlider
 from skimage.filters import window
 
-
+# legacy
 def PlotDiff(fig, dp, dq, norm = 'log', cmap = cc.cm. fire, vmin = None, vmax = None):
     if vmin is None:
         vmin = dp.min()
@@ -36,6 +36,8 @@ def PlotDiff(fig, dp, dq, norm = 'log', cmap = cc.cm. fire, vmin = None, vmax = 
     plt.show()
     #return fig
 
+
+# Active
 def PlotImage(fig, image, dr, norm = 'linear', cmap = 'gray', vmin= None,  vmax = None, unit = 'nm', dimension = 'real-space'):
     """
     Plotting 2D image with scalebar
@@ -111,6 +113,10 @@ def PlotImage(fig, image, dr, norm = 'linear', cmap = 'gray', vmin= None,  vmax 
     plt.show()
 
 
+
+"""
+Interactive Plotting
+"""
 class SliceViewer:
     # Keep the return value bound to a variable (e.g. `viewer = PtychoSliceViewer(...)`).
     # Calling this bare and unassigned lets Python garbage-collect the instance right
@@ -122,8 +128,8 @@ class SliceViewer:
         self.img_stack = img_stack
         self.num_slices = img_stack.shape[0]
         self.image_shape = img_stack.shape[1:]
-        w_2d = window('hann', self.image_shape)
-        self.fft_slice_by_slice_abs = np.array([np.abs(np.fft.fftshift(np.fft.fft2(img_stack[i]*w_2d))) for i in range(self.num_slices)])
+        #w_2d = window('hann', self.image_shape)
+        self.fft_slice_by_slice_abs = np.array([np.abs(np.fft.fftshift(np.fft.fft2(img_stack[i]))) for i in range(self.num_slices)])
         self.img_vmin, self.img_vmax = img_stack.min(), img_stack.max()
         self.fft_vmin, self.fft_vmax = self.fft_slice_by_slice_abs.min(), self.fft_slice_by_slice_abs.max()
 
@@ -196,7 +202,7 @@ class SliceViewer:
         self._update()
         plt.show()
 
-    def _update(self, _=None):
+    def _update(self, _= None):
         frame = int(self.frame_slider.val)
         self.img.set_data(self.img_stack[frame])
         self.fft_img.set_data(self.fft_slice_by_slice_abs[frame])
@@ -206,9 +212,137 @@ class SliceViewer:
 
         self.fig.suptitle(f"Frame {frame}")
         self.fig.canvas.draw_idle()
+        #self.fig.canvas.blit()
 
     def _reset(self, _event):
         self.frame_slider.reset()
+        self.img_vlim.reset()
+        self.fft_vlim.reset()
+
+    def show(self):
+        plt.show()
+
+
+class SoftBandPassFilter:
+    # Keep the return value bound to a variable (e.g. `viewer = PtychoSliceViewer(...)`).
+    # Calling this bare and unassigned lets Python garbage-collect the instance right
+    # after construction, which can silently kill the Slider/Button widgets before they render.
+    def __init__(
+            self,
+            img
+    ):
+        self.img = img
+        self.image_shape = img.shape[1:]
+
+        self.img_fft = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(img)))
+        self.img_fft_abs = np.abs(self.img_fft)
+
+
+        self.img_vmin, self.img_vmax = img.min(), img.max()
+        self.fft_vmin, self.fft_vmax = self.img_fft_abs.min(), self.img_fft_abs.max()
+
+        self.fig, (self.ax_img, self.ax_fft) = plt.subplots(1, 2, figsize=(4,2))
+        self.fig.subplots_adjust(bottom = 0.25, left = 0.13, right = 0.78)
+
+        for ax in (self.ax_img, self.ax_fft):
+            ax.set_axis_off()
+
+        freq_ax = self.fig.add_axes((0.18, 0.16, 0.64, 0.03))
+        left_range_ax = self.fig.add_axes((0.1, 0.25, 0.0225, 0.63))
+        right_range_ax = self.fig.add_axes((0.8, 0.25, 0.0225, 0.63))
+        reset_ax = self.fig.add_axes((0.84, 0.13, 0.10, 0.05))
+
+        self.img = self.ax_img.imshow(self.img, vmin=self.img_vmin, vmax=self.img_vmax, cmap = 'gray')
+        self.fft_img = self.ax_fft.imshow(self.img_fft_abs, vmin=self.fft_vmin, vmax=self.fft_vmax, norm = 'log', cmap = 'gray')
+
+        self.frequency_slide = Slider(
+            freq_ax,
+            "Frequency (Nyquist)",
+            valmin=0,
+            valmax=np.sqrt(2),
+            valinit=1,
+            valstep=0.01,
+            handle_style = {
+                'facecolor': 'lightblue',
+                'edgecolor': 'black',
+                'size':5
+            }
+        )
+
+        self.img_vlim = RangeSlider(
+            left_range_ax,
+            "vlim",
+            valmin=float(self.img_vmin),
+            valmax=float(self.img_vmax),
+            valinit=(self.img_vmin, self.img_vmax),
+            orientation = 'vertical',
+            handle_style = {
+                            'facecolor': 'lightblue',
+                            'edgecolor': 'black',
+                            'size':5
+                        }
+        )
+
+        self.fft_vlim = RangeSlider(
+            right_range_ax,
+            "vlim",
+            valmin=float(self.fft_vmin),
+            valmax=float(self.fft_vmax),
+            valinit=(self.fft_vmin, self.fft_vmax),
+            orientation = 'vertical',
+            handle_style = {
+                            'facecolor': 'lightblue',
+                            'edgecolor': 'black',
+                            'size':5
+                        }
+        )
+
+        self.reset_button = Button(
+            reset_ax,
+            "Reset",
+        )
+
+        self.frequency_slide.on_changed(self._update)
+        self.img_vlim.on_changed(self._update)
+        self.fft_vlim.on_changed(self._update)
+        self.reset_button.on_clicked(self._reset)
+
+        self._update()
+        plt.show()
+
+    def _filter(self, _=None):
+        # Apply a soft band-pass filter based on the frequency slider value
+        sigma_nyquist = self.frequency_slide.val
+        fft = self.img_fft
+
+        fy = np.fft.fftshift(np.fft.fftfreq(fft.shape[0]))/0.5
+        fx = np.fft.fftshift(np.fft.fftfreq(fft.shape[1]))/0.5
+
+        fxx, fyy = np.meshgrid(fx, fy)
+        fr = np.sqrt(fxx**2 + fyy**2)
+
+        H = np.exp(-0.5*(fr/sigma_nyquist)**2)
+
+        fft_filtered = fft * H
+        ifft_filtered = np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(fft_filtered)))
+
+        return fft_filtered, ifft_filtered
+
+
+    def _update(self, _= None):
+        # Update the color limits based on the range sliders
+        fft_filtered, ifft_filtered = self._filter()
+
+        self.img.set_clim(*self.img_vlim.val)
+        self.fft_img.set_clim(*self.fft_vlim.val)
+
+        self.fft_img.set_data(np.abs(fft_filtered))
+        self.img.set_data(np.abs(ifft_filtered))
+
+        self.fig.canvas.draw_idle()
+
+    def _reset(self, _event):
+        self.frequency_slide.reset()
         self.img_vlim.reset()
         self.fft_vlim.reset()
 
