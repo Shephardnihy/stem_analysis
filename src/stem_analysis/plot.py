@@ -247,10 +247,10 @@ class SoftBandPassFilter:
         for ax in (self.ax_img, self.ax_fft):
             ax.set_axis_off()
 
-        freq_ax = self.fig.add_axes((0.18, 0.16, 0.64, 0.03))
+        freq_ax = self.fig.add_axes((0.18, 0.16, 0.5, 0.03))
         left_range_ax = self.fig.add_axes((0.1, 0.25, 0.0225, 0.63))
         right_range_ax = self.fig.add_axes((0.8, 0.25, 0.0225, 0.63))
-        reset_ax = self.fig.add_axes((0.84, 0.13, 0.10, 0.05))
+        reset_ax = self.fig.add_axes((0.84, 0.2, 0.10, 0.05))
 
         self.img = self.ax_img.imshow(self.img, vmin=self.img_vmin, vmax=self.img_vmax, cmap = 'gray')
         self.fft_img = self.ax_fft.imshow(self.img_fft_abs, vmin=self.fft_vmin, vmax=self.fft_vmax, norm = 'log', cmap = 'gray')
