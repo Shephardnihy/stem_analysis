@@ -330,3 +330,21 @@ def FitAberrations(
         "target_intensity": target,
         "result": best,
     }
+
+
+def  SoftBandPassFilter(img, sigma_nyquist):
+    # Apply a soft band-pass filter based on the frequency slider value
+    fft = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(img)))
+
+    fy = np.fft.fftshift(np.fft.fftfreq(fft.shape[0]))/0.5
+    fx = np.fft.fftshift(np.fft.fftfreq(fft.shape[1]))/0.5
+
+    fxx, fyy = np.meshgrid(fx, fy)
+    fr = np.sqrt(fxx**2 + fyy**2)
+
+    H = np.exp(-0.5*(fr/sigma_nyquist)**2)
+
+    fft_filtered = fft * H
+    ifft_filtered = np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(fft_filtered)))
+
+    return np.abs(ifft_filtered)

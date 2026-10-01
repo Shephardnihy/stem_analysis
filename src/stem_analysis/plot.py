@@ -5,40 +5,9 @@ from matplotlib_scalebar.scalebar import ScaleBar
 from matplotlib.widgets import Button, Slider, RangeSlider
 from skimage.filters import window
 
-# legacy
-def PlotDiff(fig, dp, dq, norm = 'log', cmap = cc.cm. fire, vmin = None, vmax = None):
-    if vmin is None:
-        vmin = dp.min()
-
-    if vmax is None:
-        vmax = dp.max()
-
-    #fig = plt.figure(figsize = (10, 10))
-    plt.subplots_adjust(0, 0.15, 1, 1)
-    plt.imshow(dp, 
-               norm = norm, cmap = cmap, 
-               vmin = vmin, 
-               vmax = vmax)
-
-    ax = plt.gca()
-    scalebar = ScaleBar(dq, 
-                                 "1/nm",
-                                 dimension = "si-length-reciprocal",
-                                 location = 'lower right',
-                                 frameon = False,
-                                 length_fraction = 0.25,    
-                                 height_fraction = 0.02,
-                                 bbox_to_anchor=(1, -0.12),
-                                 bbox_transform = ax.transAxes,
-                                 font_properties = {'size': 32},)
-    ax.add_artist(scalebar)
-    ax.axis("off")
-    plt.show()
-    #return fig
-
 
 # Active
-def PlotImage(fig, image, dr, norm = 'linear', cmap = 'gray', vmin= None,  vmax = None, unit = 'nm', dimension = 'real-space'):
+def PlotImage(fig, image, dr, norm = 'linear', cmap = 'gray', vmin= None,  vmax = None, interpolation = 'none', unit = 'nm', dimension = 'real-space', sbar_length = None):
     """
     Plotting 2D image with scalebar
 
@@ -55,6 +24,8 @@ def PlotImage(fig, image, dr, norm = 'linear', cmap = 'gray', vmin= None,  vmax 
         Normalization is the same as in matplotlib's `imshow` function.
     cmap : str, optional
         Colormap to use for the image. Default is 'gray'.
+    interpolation : str or bool, optional
+        Interpolation method to use for the image. Default is False (no interpolation).
     vmin : float, optional
         Minimum value for colormap scaling. Default is None.
         If None, the minimum value of the image will be used.
@@ -71,7 +42,8 @@ def PlotImage(fig, image, dr, norm = 'linear', cmap = 'gray', vmin= None,  vmax 
     None
         The function displays the image with a scalebar and does not return any value.
     """
-    ax = fig.add_subplot()
+    fig_ax = fig.add_axes([0.1, 0.1, 0.9, 0.9])
+    sbar_ax = fig.add_axes([0.1, 0.05, 0.9, 0.05])
 
     if vmin is None:
         vmin = image.min()
@@ -81,36 +53,46 @@ def PlotImage(fig, image, dr, norm = 'linear', cmap = 'gray', vmin= None,  vmax 
     x_range = image.shape[1]
     y_range = image.shape[0]
     
-    plt.imshow(image, norm = norm, cmap = cmap, vmin = vmin, vmax = vmax)
+    fig_ax.imshow(image, norm = norm, cmap = cmap, vmin = vmin, vmax = vmax, interpolation = interpolation)
+
+    if sbar_length is not None:
+        sbar_width = sbar_length / (dr * x_range)
+    else:
+        sbar_width = 0.25
+
     sbar = plt.Rectangle(
-        (0.75 ,-0.03),
-        0.25,
+        (1 - sbar_width ,-0.03),
+        sbar_width,
         0.02,
         color='k',
-        transform = ax.transAxes,
+        transform = fig_ax.transAxes,
         clip_on = False,
         linewidth = 0
     )
 
     if dimension == 'real-space':
         scale = plt.Text(
-            0.75+0.25/2 ,-0.03-0.05, f"{dr*x_range*0.25:.0f} {unit}",
+            1 - sbar_width/2 ,-0.03-0.05, fr"{sbar_width*dr*x_range:.0f} {unit}",
             horizontalalignment = 'center',
-            transform = ax.transAxes,
+            transform = fig_ax.transAxes,
             clip_on = False,
+            fontsize = 12
         )
     else:
         scale = plt.Text(
-            0.75+0.25/2 ,-0.03-0.07, fr"{dr*x_range*0.25:.0f} {unit}$^{{-1}}$",
+            1 - sbar_width/2 ,-0.03-0.07, fr"{sbar_width*dr*x_range:.0f} {unit}$^{{-1}}$",
             horizontalalignment = 'center',
-            transform = ax.transAxes,
+            transform = fig_ax.transAxes,
             clip_on = False,
+            fontsize = 12
         )
-    ax.add_artist(scale)
-    ax.add_patch(sbar)
+    fig_ax.add_artist(scale)
+    sbar_ax.add_patch(sbar)
 
-    ax.axis("off")
+    fig_ax.axis("off")
+    sbar_ax.axis("off")
     plt.show()
+    return fig_ax
 
 
 
@@ -128,12 +110,12 @@ class SliceViewer:
         self.img_stack = img_stack
         self.num_slices = img_stack.shape[0]
         self.image_shape = img_stack.shape[1:]
-        #w_2d = window('hann', self.image_shape)
-        self.fft_slice_by_slice_abs = np.array([np.abs(np.fft.fftshift(np.fft.fft2(img_stack[i]))) for i in range(self.num_slices)])
+        w_2d = window('hann', self.image_shape)
+        self.fft_slice_by_slice_abs = np.array([np.abs(np.fft.fftshift(np.fft.fft2(img_stack[i]*w_2d))) for i in range(self.num_slices)])
         self.img_vmin, self.img_vmax = img_stack.min(), img_stack.max()
         self.fft_vmin, self.fft_vmax = self.fft_slice_by_slice_abs.min(), self.fft_slice_by_slice_abs.max()
 
-        self.fig, (self.ax_img, self.ax_fft) = plt.subplots(1, 2, figsize=(4,2))
+        self.fig, (self.ax_img, self.ax_fft) = plt.subplots(1, 2)
         self.fig.subplots_adjust(bottom = 0.25, left = 0.13, right = 0.78)
 
         for ax in (self.ax_img, self.ax_fft):
@@ -241,7 +223,7 @@ class SoftBandPassFilter:
         self.img_vmin, self.img_vmax = img.min(), img.max()
         self.fft_vmin, self.fft_vmax = self.img_fft_abs.min(), self.img_fft_abs.max()
 
-        self.fig, (self.ax_img, self.ax_fft) = plt.subplots(1, 2, figsize=(4,2))
+        self.fig, (self.ax_img, self.ax_fft) = plt.subplots(1, 2, figsize=(10, 8))
         self.fig.subplots_adjust(bottom = 0.25, left = 0.13, right = 0.78)
 
         for ax in (self.ax_img, self.ax_fft):
